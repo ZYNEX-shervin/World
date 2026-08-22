@@ -7,12 +7,19 @@ using only the '.' character.
 import sys
 import os
 import argparse
-import curses
 import time
 from pathlib import Path
 
 # Add the project root to the path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Try to import curses - handle Windows gracefully
+try:
+    import curses
+    HAS_CURSES = True
+except ImportError:
+    HAS_CURSES = False
+    print("Warning: curses not available. Install with: pip install windows-curses")
 
 from src.config import config, WORLD_GEOJSON_PATH
 from src.mapdata import download_world_data, load_world_geometry
@@ -30,6 +37,13 @@ def check_dependencies():
         print(f"Error: Missing dependency: {e}")
         print("\nInstall dependencies with:")
         print("  pip install -r requirements.txt")
+        sys.exit(1)
+    
+    if not HAS_CURSES:
+        print("Error: curses module not available")
+        print("\nOn Windows, install with:")
+        print("  pip install windows-curses")
+        print("\nOn Linux/Mac, curses should be built-in")
         sys.exit(1)
 
 def ensure_dataset():
