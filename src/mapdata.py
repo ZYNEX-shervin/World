@@ -5,12 +5,24 @@ import os
 import json
 import gzip
 import shutil
+import sys
 from pathlib import Path
 from urllib.request import urlopen
 from urllib.error import URLError
-import sys
 
-from src.config import WORLD_GEOJSON_PATH, WORLD_GEOJSON_URL, WORLD_GEOJSON_FALLBACK, DATA_DIR
+def get_data_dir():
+    """Get data directory path"""
+    return Path(__file__).parent.parent / "data"
+
+def get_world_geojson_path():
+    """Get world GeoJSON path"""
+    return get_data_dir() / "world.geojson"
+
+# Constants
+WORLD_GEOJSON_PATH = get_world_geojson_path()
+DATA_DIR = get_data_dir()
+WORLD_GEOJSON_URL = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
+WORLD_GEOJSON_FALLBACK = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson"
 
 def download_file(url, output_path, progress=True):
     """
