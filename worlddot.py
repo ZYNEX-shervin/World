@@ -5,10 +5,14 @@ A terminal application that renders a complete, real geographic world map
 using only the '.' character.
 """
 import sys
+import os
 import argparse
 import curses
 import time
 from pathlib import Path
+
+# Add the project root to the path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.config import config, WORLD_GEOJSON_PATH
 from src.mapdata import download_world_data, load_world_geometry
