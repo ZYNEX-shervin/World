@@ -2,7 +2,6 @@
 Configuration management for WorldDot
 """
 import json
-import os
 from pathlib import Path
 
 # Project directories

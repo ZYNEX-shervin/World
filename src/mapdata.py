@@ -1,14 +1,10 @@
 """
 Geographic data management and dataset downloading
 """
-import os
 import json
-import gzip
-import shutil
 import sys
 from pathlib import Path
 from urllib.request import urlopen
-from urllib.error import URLError
 
 def get_data_dir():
     """Get data directory path"""
@@ -25,9 +21,7 @@ WORLD_GEOJSON_URL = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_adm
 WORLD_GEOJSON_FALLBACK = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson"
 
 def download_file(url, output_path, progress=True):
-    """
-    Download a file from URL to output_path
-    """
+    """Download a file from URL to output_path"""
     try:
         print(f"Downloading from: {url}")
         with urlopen(url, timeout=30) as response:
@@ -58,13 +52,10 @@ def download_file(url, output_path, progress=True):
         return False
 
 def extract_geojson_from_zip(zip_path, output_path):
-    """
-    Extract GeoJSON from Natural Earth zip file
-    """
+    """Extract GeoJSON from Natural Earth zip file"""
     try:
         import zipfile
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            # Find .geojson file in zip
             for name in zip_ref.namelist():
                 if name.endswith('.geojson'):
                     with zip_ref.open(name) as source:
@@ -77,15 +68,11 @@ def extract_geojson_from_zip(zip_path, output_path):
         return False
 
 def download_world_data():
-    """
-    Download Natural Earth world geographic data
-    Returns True if successful, False otherwise
-    """
+    """Download Natural Earth world geographic data"""
     print("\n" + "="*60)
     print("WorldDot — Geographic Data Download")
     print("="*60)
     
-    # Check if data already exists
     if WORLD_GEOJSON_PATH.exists():
         try:
             with open(WORLD_GEOJSON_PATH, 'r') as f:
@@ -97,10 +84,8 @@ def download_world_data():
         except:
             pass
     
-    # Create data directory
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     
-    # Try primary source (Natural Earth zip)
     print(f"\n1. Attempting to download from Natural Earth (zip)...")
     temp_zip = DATA_DIR / "ne_110m_admin_0_countries.zip"
     if download_file(WORLD_GEOJSON_URL, temp_zip):
@@ -111,13 +96,11 @@ def download_world_data():
             return True
         temp_zip.unlink()
     
-    # Try fallback source (raw GeoJSON)
     print(f"\n2. Attempting to download from GitHub fallback...")
     if download_file(WORLD_GEOJSON_FALLBACK, WORLD_GEOJSON_PATH):
         print("✓ Successfully downloaded world data!")
         return True
     
-    # If all downloads fail
     print("\n" + "="*60)
     print("ERROR: Could not download geographic data")
     print("="*60)
@@ -130,36 +113,26 @@ def download_world_data():
     return False
 
 def validate_geojson(file_path):
-    """
-    Validate GeoJSON file
-    """
+    """Validate GeoJSON file"""
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
         
         if not isinstance(data, dict):
             raise ValueError("GeoJSON must be a JSON object")
-        
         if 'features' not in data:
             raise ValueError("GeoJSON must contain 'features' array")
+        if not isinstance(data['features'], list) or len(data['features']) == 0:
+            raise ValueError("GeoJSON features must be a non-empty array")
         
-        features = data['features']
-        if not isinstance(features, list):
-            raise ValueError("'features' must be an array")
-        
-        if len(features) == 0:
-            raise ValueError("GeoJSON has no features")
-        
-        print(f"✓ GeoJSON valid: {len(features)} features")
+        print(f"✓ GeoJSON valid: {len(data['features'])} features")
         return True
     except Exception as e:
         print(f"✗ GeoJSON validation error: {e}")
         return False
 
 def load_world_geometry():
-    """
-    Load world geometric data as GeoDataFrame
-    """
+    """Load world geometric data as GeoDataFrame"""
     try:
         import geopandas as gpd
         
@@ -168,10 +141,7 @@ def load_world_geometry():
         
         print(f"Loading geographic data from {WORLD_GEOJSON_PATH}...")
         gdf = gpd.read_file(str(WORLD_GEOJSON_PATH))
-        
         print(f"✓ Loaded {len(gdf)} geographic features")
-        print(f"  Columns: {', '.join(gdf.columns.tolist())}")
-        
         return gdf
     except ImportError:
         raise ImportError("GeoPandas not installed. Run: pip install -r requirements.txt")
@@ -185,12 +155,8 @@ def load_world_geometry():
         raise
 
 if __name__ == "__main__":
-    """
-    Standalone script to download geographic data
-    """
     if download_world_data():
         if validate_geojson(WORLD_GEOJSON_PATH):
             print("\n✓ Geographic data ready for use!")
             sys.exit(0)
-    
     sys.exit(1)

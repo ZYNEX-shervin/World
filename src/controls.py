@@ -7,33 +7,21 @@ class InputHandler:
     """Handles keyboard input"""
     
     def __init__(self, stdscr, renderer):
-        """
-        Initialize input handler
-        
-        Args:
-            stdscr: curses window object
-            renderer: TerminalRenderer instance
-        """
         self.stdscr = stdscr
         self.renderer = renderer
         self.running = True
     
     def handle_input(self):
-        """
-        Process keyboard input
-        Returns True if should continue running, False to quit
-        """
+        """Process keyboard input"""
         try:
             ch = self.stdscr.getch()
             
             if ch == -1:
-                # No input
                 return True
             
-            # Handle input
             if ch == ord('q') or ch == ord('Q'):
                 return False
-            elif ch == 27:  # ESC
+            elif ch == 27:
                 return False
             elif ch == ord('+') or ch == ord('='):
                 self.renderer.zoom_in()
@@ -59,8 +47,7 @@ class InputHandler:
                 self.renderer.pan('east')
             
             return True
-        
         except KeyboardInterrupt:
             return False
-        except Exception:
+        except:
             return True
